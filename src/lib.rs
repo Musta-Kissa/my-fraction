@@ -17,8 +17,8 @@ macro_rules! fr {
 
 #[derive(Debug, Clone, Copy, Eq)]
 pub struct MyFraction {
-    pub numerator: i128,
-    pub denominator: i128,
+    numerator: i128,
+    denominator: i128,
 }
 impl MyFraction {
     pub fn new(num: i128, den: i128) -> Self {
