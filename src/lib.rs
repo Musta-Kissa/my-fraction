@@ -1,11 +1,21 @@
-use std::cmp;
 use std::cmp::PartialEq;
+use std::cmp::{self, Ordering};
 use std::convert::From;
 use std::fmt::{Debug, Display, Formatter, Result};
 use std::marker::Copy;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
-#[derive(Debug, Clone, Copy)]
+#[cfg(test)]
+mod test;
+
+#[macro_export]
+macro_rules! fr {
+    ($num:expr,$den:expr) => {
+        MyFraction::new($num, $den)
+    };
+}
+
+#[derive(Debug, Clone, Copy, Eq)]
 pub struct MyFraction {
     pub numerator: i128,
     pub denominator: i128,
@@ -23,14 +33,19 @@ impl MyFraction {
         let abs_num = self.numerator.abs();
         let abs_den = self.denominator.abs();
         let mut max_factor: i128 = 1;
-        for i in 1..(cmp::max(abs_num, abs_den) / 2) {
-            let num_is: bool = abs_num % i == 0;
-            let den_is: bool = abs_den % i == 0;
-            if num_is && den_is {
-                max_factor = i;
-            } else if !(num_is && den_is) {
-            } else {
-                break;
+
+        if abs_num % abs_den == 0 {
+            max_factor = abs_den;
+        } else {
+            for i in 1..(cmp::max(abs_num, abs_den) / 2) {
+                let num_is: bool = abs_num % i == 0;
+                let den_is: bool = abs_den % i == 0;
+                if num_is && den_is {
+                    max_factor = i;
+                } else if !(num_is && den_is) {
+                } else {
+                    break;
+                }
             }
         }
         if self.denominator.is_negative() {
@@ -42,7 +57,24 @@ impl MyFraction {
         assert_ne!(self.denominator, 0);
         self
     }
+    pub fn as_f64(&self) -> f64 {
+        self.numerator as f64 / self.denominator as f64
+    }
+    pub fn as_mixed(&self) -> String {
+        let rem = self.numerator % self.denominator;
+        if self.denominator == 1 {
+            return format!("{}", self.numerator);
+        }
+        if self.numerator < self.denominator {
+            return format!("({}/{})", self.numerator, self.denominator);
+        }
+        let whole_part = (self.numerator - rem) / self.denominator;
+        format!("{whole_part}({rem}/{})", self.denominator)
+    }
 }
+
+//==========================================================//
+
 impl Sub<MyFraction> for MyFraction {
     type Output = MyFraction;
 
@@ -62,28 +94,37 @@ impl Sub<MyFraction> for MyFraction {
         }
     }
 }
-impl Sub<i128> for MyFraction {
-    type Output = MyFraction;
+macro_rules! implSub {
+    ($($type:ty),*) => { $(
+        impl Sub<$type> for MyFraction {
+            type Output = MyFraction;
 
-    fn sub(self, rhs: i128) -> Self::Output {
-        Self {
-            numerator: self.numerator - rhs * self.denominator,
-            denominator: self.denominator,
+            fn sub(self, rhs: $type) -> Self::Output {
+                Self {
+                    numerator: self.numerator - rhs as i128 * self.denominator,
+                    denominator: self.denominator,
+                }
+                .simplify()
+            }
         }
-        .simplify()
-    }
-}
-impl Sub<MyFraction> for i128 {
-    type Output = MyFraction;
+        impl Sub<MyFraction> for $type {
+            type Output = MyFraction;
 
-    fn sub(self, rhs: MyFraction) -> Self::Output {
-        MyFraction {
-            numerator: self * rhs.denominator - rhs.numerator,
-            denominator: rhs.denominator,
+            fn sub(self, rhs: MyFraction) -> Self::Output {
+                MyFraction {
+                    numerator: self as i128 * rhs.denominator - rhs.numerator,
+                    denominator: rhs.denominator,
+                }
+                .simplify()
+            }
         }
-        .simplify()
-    }
+        )*
+    };
 }
+implSub!(usize, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128);
+
+//==========================================================//
+
 impl Add<MyFraction> for MyFraction {
     type Output = MyFraction;
 
@@ -103,28 +144,37 @@ impl Add<MyFraction> for MyFraction {
         }
     }
 }
-impl Add<i128> for MyFraction {
-    type Output = MyFraction;
+macro_rules! implAdd {
+    ($($type:ty),*) => { $(
+        impl Add<$type> for MyFraction {
+            type Output = MyFraction;
 
-    fn add(self, rhs: i128) -> Self::Output {
-        Self {
-            numerator: self.numerator + rhs * self.denominator,
-            denominator: self.denominator,
+            fn add(self, rhs: $type) -> Self::Output {
+                Self {
+                    numerator: self.numerator + rhs as i128 * self.denominator,
+                    denominator: self.denominator,
+                }
+                .simplify()
+            }
         }
-        .simplify()
-    }
-}
-impl Add<MyFraction> for i128 {
-    type Output = MyFraction;
+        impl Add<MyFraction> for $type {
+            type Output = MyFraction;
 
-    fn add(self, rhs: MyFraction) -> Self::Output {
-        MyFraction {
-            numerator: self * rhs.denominator + rhs.numerator,
-            denominator: rhs.denominator,
+            fn add(self, rhs: MyFraction) -> Self::Output {
+                MyFraction {
+                    numerator: self as i128 * rhs.denominator + rhs.numerator,
+                    denominator: rhs.denominator,
+                }
+                .simplify()
+            }
         }
-        .simplify()
-    }
+        )*
+    };
 }
+implAdd!(usize, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128);
+
+//==========================================================//
+
 impl Mul<MyFraction> for MyFraction {
     type Output = MyFraction;
 
@@ -136,28 +186,37 @@ impl Mul<MyFraction> for MyFraction {
         .simplify()
     }
 }
-impl Mul<i128> for MyFraction {
-    type Output = MyFraction;
+macro_rules! implMul {
+    ($($type:ty),*) => { $(
+        impl Mul<$type> for MyFraction {
+            type Output = MyFraction;
 
-    fn mul(self, rhs: i128) -> Self::Output {
-        Self {
-            numerator: self.numerator * rhs,
-            denominator: self.denominator,
+            fn mul(self, rhs: $type) -> Self::Output {
+                Self {
+                    numerator: self.numerator * rhs as i128,
+                    denominator: self.denominator,
+                }
+                .simplify()
+            }
         }
-        .simplify()
-    }
-}
-impl Mul<MyFraction> for i128 {
-    type Output = MyFraction;
+        impl Mul<MyFraction> for $type {
+            type Output = MyFraction;
 
-    fn mul(self, rhs: MyFraction) -> Self::Output {
-        MyFraction {
-            numerator: rhs.numerator * self,
-            denominator: rhs.denominator,
+            fn mul(self, rhs: MyFraction) -> Self::Output {
+                MyFraction {
+                    numerator: rhs.numerator * self as i128,
+                    denominator: rhs.denominator,
+                }
+                .simplify()
+            }
         }
-        .simplify()
-    }
+        )*
+    };
 }
+implMul!(usize, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128);
+
+//==========================================================//
+
 impl Div<MyFraction> for MyFraction {
     type Output = MyFraction;
 
@@ -170,29 +229,38 @@ impl Div<MyFraction> for MyFraction {
         .simplify()
     }
 }
-impl Div<i128> for MyFraction {
-    type Output = MyFraction;
+macro_rules! implDiv {
+    ($($type:ty),*) => { $(
+        impl Div<MyFraction> for $type {
+            type Output = MyFraction;
 
-    fn div(self, rhs: i128) -> Self::Output {
-        assert_ne!(self.denominator * rhs, 0);
-        Self {
-            numerator: self.numerator,
-            denominator: self.denominator * rhs,
+            fn div(self, rhs: MyFraction) -> Self::Output {
+                MyFraction {
+                    numerator: (self as i128) * rhs.denominator,
+                    denominator: rhs.numerator,
+                }
+                .simplify()
+            }
         }
-        .simplify()
-    }
-}
-impl Div<MyFraction> for i128 {
-    type Output = MyFraction;
+        impl Div<$type> for MyFraction {
+            type Output = MyFraction;
 
-    fn div(self, rhs: MyFraction) -> Self::Output {
-        MyFraction {
-            numerator: self * rhs.denominator,
-            denominator: rhs.numerator,
+            fn div(self, rhs: $type) -> Self::Output {
+                assert_ne!(self.denominator * rhs as i128, 0);
+                Self {
+                    numerator: self.numerator,
+                    denominator: self.denominator * rhs as i128,
+                }
+                .simplify()
+            }
         }
-        .simplify()
-    }
+        )*
+    };
 }
+implDiv!(usize, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128);
+
+//==========================================================//
+
 impl SubAssign for MyFraction {
     fn sub_assign(&mut self, rhs: Self) {
         *self = *self - rhs;
@@ -203,19 +271,98 @@ impl AddAssign for MyFraction {
         *self = *self + rhs;
     }
 }
+macro_rules! implSubAddAss {
+    ($($type:ty),*) => { $(
+        impl SubAssign<$type> for MyFraction {
+            fn sub_assign(&mut self, rhs: $type) {
+                *self = *self - rhs;
+            }
+        }
+        impl AddAssign<$type> for MyFraction {
+            fn add_assign(&mut self, rhs: $type) {
+                *self = *self + rhs;
+            }
+        }
+        )*
+    };
+}
+implSubAddAss!(usize, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128);
+
+//==========================================================//
+
 impl PartialEq for MyFraction {
     fn eq(&self, other: &Self) -> bool {
         self.denominator == other.denominator && self.numerator == other.numerator
     }
 }
-impl From<i128> for MyFraction {
-    fn from(value: i128) -> Self {
-        MyFraction {
-            numerator: value,
-            denominator: 1,
+impl PartialOrd for MyFraction {
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for MyFraction {
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
+        if self.denominator == other.denominator {
+            return self.numerator.cmp(&other.numerator);
+        } else {
+            return (self.numerator * other.denominator).cmp(&(other.numerator * self.denominator));
         }
     }
 }
+macro_rules! implCmp {
+    ($($type:ty),*) => { $(
+        impl PartialEq<$type> for MyFraction {
+            fn eq(&self, other: &$type) -> bool {
+                self.denominator == 1 && self.numerator == *other as i128
+            }
+        }
+        impl PartialOrd<$type> for MyFraction {
+            fn partial_cmp(&self, other: &$type) -> Option<Ordering> {
+                if self.denominator == 1 {
+                    return Some(self.numerator.cmp(&(*other as i128)));
+                } else {
+                    return Some(self.numerator.cmp(&(*other as i128 * self.denominator)));
+                }
+            }
+        }
+
+        impl PartialEq<MyFraction> for $type {
+            fn eq(&self, other: &MyFraction) -> bool {
+                other.denominator == 1 && other.numerator == *self as i128
+            }
+        }
+        impl PartialOrd<MyFraction> for $type {
+            fn partial_cmp(&self, other: &MyFraction) -> Option<Ordering> {
+                if other.denominator == 1 {
+                    return Some((*self as i128).cmp(&other.numerator));
+                } else {
+                    return Some(((*self as i128) * other.denominator).cmp(&other.numerator));
+                }
+            }
+        }
+        )*
+    };
+}
+implCmp!(usize, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128);
+
+//==========================================================//
+
+macro_rules! implFrom {
+    ($($type:ty),*) => { $(
+        impl From<$type> for MyFraction {
+            fn from(value: $type) -> Self {
+                MyFraction {
+                    numerator: value as i128,
+                    denominator: 1,
+                }
+            }
+        }
+        )*
+    };
+}
+implFrom!(usize, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128);
+
+//==========================================================//
 
 impl Display for MyFraction {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
@@ -225,44 +372,5 @@ impl Display for MyFraction {
             write!(f, "({}/{})", self.numerator, self.denominator)?;
         }
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn tests() {
-        println!("MY PRINTS:");
-        const N: i128 = 4;
-
-        let fr = MyFraction::new(2, 4);
-        let fr_2 = MyFraction::new(3, 8);
-        let fr_3 = MyFraction::new(3, 2);
-        let fr_4 = MyFraction::new(1, 4);
-
-        println!("{fr_3} - {fr_4} = {}", fr_3 - fr_4);
-        println!("{fr_3} - {N}(i128) = {}", fr_3 - N);
-        println!("{N}(i128) - {fr_3} = {}", N - fr_3);
-        println!();
-        println!("{fr} + {fr_2} = {}", fr + fr_2);
-        println!("{fr_3} + {fr_4} = {}", fr_3 + fr_4);
-        println!("{fr_3} + {N}(i128) = {}", fr_3 + N);
-        println!("{N}(i128) + {fr_3} = {}", N + fr_3);
-        println!();
-        println!("{fr_3} / {fr_4} = {}", fr_3 / fr_4);
-        println!("{fr_3} / {N}(i128) = {}", fr_3 / N);
-        println!("{N}(i128) / {fr_3} = {}", N / fr_3);
-        println!();
-        println!("{fr_3} * {fr_4} = {}", fr_3 * fr_4);
-        println!("{fr_3} * {N}(i128) = {}", fr_3 * N);
-        println!("{N}(i128) * {fr_3} = {}", N * fr_3);
-        println!();
-
-        let fr_5 = MyFraction::new(-2, 3);
-        println!("{fr_3} / {fr_5} = {}", fr_3 / fr_5);
-
-        panic!("OK PANIC");
     }
 }
