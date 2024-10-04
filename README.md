@@ -7,7 +7,7 @@ This is an implementation of a Fraction type in Rust
 [dependencies]
 my_fractions = { path = "../my_fractions" }
 ```
-##### main/src
+##### main/src.rs
 ```rust
 use my_fractions::*;
 
