@@ -278,7 +278,7 @@ impl DivAssign for MyFraction {
         *self = *self / rhs;
     } 
 }
-macro_rules! implSubAddAss {
+macro_rules! implAssign {
     ($($type:ty),*) => { $(
         impl SubAssign<$type> for MyFraction {
             fn sub_assign(&mut self, rhs: $type) {
@@ -303,7 +303,7 @@ macro_rules! implSubAddAss {
         )*
     };
 }
-implSubAddAss!(usize, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128);
+implAssign!(usize, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128);
 
 //==========================================================//
 
