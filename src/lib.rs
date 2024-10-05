@@ -3,7 +3,7 @@ use std::cmp::{self, Ordering};
 use std::convert::From;
 use std::fmt::{Debug, Display, Formatter, Result};
 use std::marker::Copy;
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Deref, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 #[cfg(test)]
 mod test;
@@ -268,6 +268,16 @@ impl AddAssign for MyFraction {
         *self = *self + rhs;
     }
 }
+impl MulAssign for MyFraction {
+    fn mul_assign(&mut self, rhs: Self) {
+        *self = *self * rhs;
+    } 
+}
+impl DivAssign for MyFraction {
+    fn div_assign(&mut self, rhs: Self) {
+        *self = *self / rhs;
+    } 
+}
 macro_rules! implSubAddAss {
     ($($type:ty),*) => { $(
         impl SubAssign<$type> for MyFraction {
@@ -278,6 +288,16 @@ macro_rules! implSubAddAss {
         impl AddAssign<$type> for MyFraction {
             fn add_assign(&mut self, rhs: $type) {
                 *self = *self + rhs;
+            }
+        }
+        impl MulAssign<$type> for MyFraction {
+            fn mul_assign(&mut self, rhs: $type) {
+                *self = *self * rhs;
+            }
+        }
+        impl DivAssign<$type> for MyFraction {
+            fn div_assign(&mut self, rhs: $type) {
+                *self = *self / rhs;
             }
         }
         )*
