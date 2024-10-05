@@ -43,8 +43,14 @@ impl Div<$type> for MyFraction {...}
 
 impl SubAssign for MyFraction {...}
 impl AddAssign for MyFraction {...}
+impl MulAssign for MyFraction {...}
+impl DivAssign for MyFraction {...}
+
 impl SubAssign<$type> for MyFraction {...}
 impl AddAssign<$type> for MyFraction {...}
+impl MulAssign<$type> for MyFraction {...}
+impl DivAssign<$type> for MyFraction {...}
+
 
 impl PartialEq for MyFraction {...}
 impl PartialOrd for MyFraction {...}
