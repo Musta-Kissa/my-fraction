@@ -59,7 +59,7 @@ impl From<$type> for MyFraction {...}
 
 impl Display for MyFraction {...}
 ```
-The `$type` stands for all of `usize, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128` these types
+The `$type` stands for all of these types: `usize, i8, i16, i32, i64, i128, u8, u16, u32, u64, u128`
 
 ### Examples
 ```rust
