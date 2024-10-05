@@ -80,6 +80,7 @@ fn main() {
     fr = fr / 2;    println!("{}", fr); //110
     fr /= 4;        println!("{}", fr); //(55/2)
     fr = fr * 0;    println!("{}", fr); //0
+    fr = fr + 20;    println!("{}", fr); //20
 
     println!("{}", fr!(3,2) < 9);          //true
     println!("{}", fr!(3,2) < fr!(1, 2));  //false
