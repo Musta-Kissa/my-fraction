@@ -15,6 +15,19 @@ macro_rules! fr {
     };
 }
 
+fn gcd(mut n:i128,mut d:i128) -> i128 {
+    assert_ne!(d,0,"dvision by zero in gcd");
+    n = n.abs();
+    d = d.abs();
+    while n != 0 {
+    if n < d {
+      std::mem::swap(&mut n, &mut d);
+    }
+    n %= d;
+  }
+  d
+}
+
 #[derive(Debug, Clone, Copy, Eq)]
 pub struct MyFraction {
     numerator: i128,
@@ -30,24 +43,8 @@ impl MyFraction {
         .simplify()
     }
     fn simplify(mut self) -> Self {
-        let abs_num = self.numerator.abs();
-        let abs_den = self.denominator.abs();
-        let mut max_factor: i128 = 1;
+        let max_factor: i128 = gcd(self.numerator, self.denominator);
 
-        if abs_num % abs_den == 0 {
-            max_factor = abs_den;
-        } else {
-            for i in 1..(cmp::max(abs_num, abs_den) / 2) {
-                let num_is: bool = abs_num % i == 0;
-                let den_is: bool = abs_den % i == 0;
-                if num_is && den_is {
-                    max_factor = i;
-                } else if !(num_is && den_is) {
-                } else {
-                    break;
-                }
-            }
-        }
         if self.denominator.is_negative() {
             self.numerator *= -1;
             self.denominator *= -1;

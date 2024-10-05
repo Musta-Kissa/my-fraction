@@ -1,5 +1,5 @@
 [package]
-name = "my_fractions"
+name = "my_fraction"
 version = "0.1.0"
 edition = "2021"
 
