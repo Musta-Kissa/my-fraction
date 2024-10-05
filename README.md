@@ -66,24 +66,24 @@ The `$type` stands for all of these types: `usize, i8, i16, i32, i64, i128, u8, 
 use my_fraction::*;
 
 fn main() {
-    let mut fr = MyFraction::new(2, 3);
-    println!("{fr}");//(2/3)   
-    fr = fr * 5;
-    println!("{}",fr);//(10/3)
-    println!("{}",fr.as_mixed());//3(1/3)
-    fr = fr * 0;
-    println!("{}",fr);//0
-    fr += 7;
-    println!("{}",fr);//7
-    fr = fr / 2;
-    println!("{}",fr);//(7/2)
-    fr -= 2;
-    println!("{}",fr);//(3/2)
-    println!("{}",fr < 9);//true
-    println!("{}",fr < fr!(1,2));//false
-    println!("{}",fr == fr!(3,2));//true
- 
-    println!("{}",fr.as_f64());//1.5
-    println!("{}",fr!(3,9).as_f64());//0.3333333333333333
+    let mut fr = MyFraction::new(7, 3);
+    println!("{fr}"); //(7/3)
+
+    println!("{}", fr.as_f64());   //2.33333333333
+    println!("{}", fr.as_mixed()); //2(1/3)
+
+    fr += 7;        println!("{}", fr); //(28/3)
+    fr -= 2;        println!("{}", fr); //(22/3)
+    fr = fr * 5;    println!("{}", fr); //(110/3)
+    fr *= fr!(2,1); println!("{}", fr); //(220/3)
+    fr *= 3;        println!("{}", fr); //220
+    fr = fr / 2;    println!("{}", fr); //110
+    fr /= 4;        println!("{}", fr); //(55/2)
+    fr = fr * 0;    println!("{}", fr); //0
+
+    println!("{}", fr!(3,2) < 9);          //true
+    println!("{}", fr!(3,2) < fr!(1, 2));  //false
+    println!("{}", fr!(3,2) == fr!(3, 2)); //true
+
 }
 ```
