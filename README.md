@@ -5,11 +5,11 @@ This is an implementation of a Fraction type in Rust
 #### Cargo.toml
 ```toml
 [dependencies]
-my_fractions = { path = "../my_fractions" }
+my_fraction = { path = "../my_fraction" }
 ```
 ##### main/src.rs
 ```rust
-use my_fractions::*;
+use my_fraction::*;
 
 fn main() {
     println!("{}",fr!(2,3));
@@ -63,7 +63,7 @@ The `$type` stands for all of `usize, i8, i16, i32, i64, i128, u8, u16, u32, u64
 
 ### Examples
 ```rust
-use my_fractions::*;
+use my_fraction::*;
 
 fn main() {
     let mut fr = MyFraction::new(2, 3);
